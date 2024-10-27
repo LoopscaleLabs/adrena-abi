@@ -92,6 +92,16 @@ mod adrena_abi {
     ) -> Result<()> {
         Ok(())
     }
+
+    pub(crate) fn cleanup_position_stop_loss(cx: Context<CleanupPositionStopLoss>) -> Result<()> {
+        Ok(())
+    }
+
+    pub(crate) fn cleanup_position_take_profit(
+        cx: Context<CleanupPositionTakeProfit>,
+    ) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -402,6 +412,66 @@ pub struct LiquidateLong<'info> {
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
     /// #25
+    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
+    sablier_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct CleanupPositionStopLoss<'info> {
+    /// #1
+    #[account(mut)]
+    pub caller: Signer<'info>,
+    /// #2
+    #[account(mut)]
+    pub owner: AccountInfo<'info>,
+    /// #3
+    pub transfer_authority: AccountInfo<'info>,
+    /// #4
+    pub cortex: AccountLoader<'info, Cortex>,
+    /// #5
+    pub pool: AccountLoader<'info, Pool>,
+    /// #6
+    #[account(mut)]
+    pub position: AccountLoader<'info, Position>,
+    /// #7
+    pub custody: AccountLoader<'info, Custody>,
+    /// #8
+    #[account(mut)]
+    pub stop_loss_thread: AccountInfo<'info>,
+    /// #9
+    #[account(mut)]
+    pub take_profit_thread: UncheckedAccount<'info>,
+    /// #10
+    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
+    sablier_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct CleanupPositionTakeProfit<'info> {
+    /// #1
+    #[account(mut)]
+    pub caller: Signer<'info>,
+    /// #2
+    #[account(mut)]
+    pub owner: AccountInfo<'info>,
+    /// #3
+    pub transfer_authority: AccountInfo<'info>,
+    /// #4
+    pub cortex: AccountLoader<'info, Cortex>,
+    /// #5
+    pub pool: AccountLoader<'info, Pool>,
+    /// #6
+    #[account(mut)]
+    pub position: AccountLoader<'info, Position>,
+    /// #7
+    pub custody: AccountLoader<'info, Custody>,
+    /// #8
+    #[account(mut)]
+    pub take_profit_thread: AccountInfo<'info>,
+    /// #9
+    #[account(mut)]
+    pub stop_loss_thread: UncheckedAccount<'info>,
+    /// #10
     #[account(address = SABLIER_THREAD_PROGRAM_ID)]
     sablier_program: AccountInfo<'info>,
 }
