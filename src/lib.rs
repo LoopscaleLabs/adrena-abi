@@ -228,6 +228,7 @@ pub struct ClosePositionShort<'info> {
     #[account(mut)]
     pub lp_staking_reward_token_vault: AccountInfo<'info>,
     /// #20
+    #[account(mut)]
     pub lp_token_mint: AccountInfo<'info>,
     /// #21
     #[account(mut)]
