@@ -4,6 +4,7 @@ pub use {
     std::str::FromStr,
 };
 
+pub mod maths;
 pub mod pda;
 pub mod types;
 

@@ -157,8 +157,8 @@ pub struct TokenRatios {
 )]
 #[repr(C)]
 pub struct U128Split {
-    high: u64,
-    low: u64,
+    pub high: u64,
+    pub low: u64,
 }
 
 #[account(zero_copy)]
