@@ -1,4 +1,5 @@
 use {
+    crate::math,
     anchor_lang::prelude::*,
     bytemuck::{Pod, Zeroable},
 };
@@ -141,6 +142,20 @@ pub struct Cortex {
     pub unique_position_automation_thread_id_counter: u64,
 }
 
+impl Cortex {
+    // BPS
+    pub const BPS_DECIMALS: u8 = 4;
+    pub const BPS_POWER: u128 = 10u64.pow(Self::BPS_DECIMALS as u32) as u128;
+    // RATE
+    pub const RATE_POWER: u128 = 10u64.pow(Self::RATE_DECIMALS as u32) as u128;
+    pub const RATE_DECIMALS: u8 = 9;
+    pub const PRICE_DECIMALS: u8 = 10;
+    pub const USD_DECIMALS: u8 = 6;
+    pub const LP_DECIMALS: u8 = Self::USD_DECIMALS;
+    pub const LM_DECIMALS: u8 = Cortex::USD_DECIMALS;
+    pub const GOVERNANCE_SHADOW_TOKEN_DECIMALS: u8 = Cortex::USD_DECIMALS;
+}
+
 #[derive(
     Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug, Pod, Zeroable,
 )]
@@ -212,6 +227,64 @@ pub struct Position {
     pub stop_loss_thread_id: u64,
     pub stop_loss_limit_price: u64,
     pub stop_loss_close_position_price: u64,
+}
+
+impl Position {
+    pub const LEN: usize = 8 + std::mem::size_of::<Position>();
+
+    pub fn is_pending_cleanup_and_close(&self) -> bool {
+        self.pending_cleanup_and_close != 0
+    }
+
+    pub fn get_side(&self) -> Side {
+        // Consider value in the struct always good
+        Side::try_from(self.side).unwrap()
+    }
+
+    pub fn take_profit_is_set(&self) -> bool {
+        self.take_profit_thread_is_set != 0
+    }
+
+    pub fn stop_loss_is_set(&self) -> bool {
+        self.stop_loss_thread_is_set != 0
+    }
+
+    pub fn take_profit_reached(&self, price: u64) -> bool {
+        if self.take_profit_limit_price == 0 {
+            return false;
+        }
+
+        if self.get_side() == Side::Long {
+            price >= self.take_profit_limit_price
+        } else {
+            price <= self.take_profit_limit_price
+        }
+    }
+
+    pub fn stop_loss_reached(&self, price: u64) -> bool {
+        if self.stop_loss_limit_price == 0 {
+            return false;
+        }
+
+        if self.get_side() == Side::Long {
+            price <= self.stop_loss_limit_price
+        } else {
+            price >= self.stop_loss_limit_price
+        }
+    }
+
+    pub fn stop_loss_slippage_ok(&self, price: u64) -> bool {
+        // 0 means no slippage
+        if self.stop_loss_close_position_price == 0 {
+            return true;
+        }
+
+        if self.get_side() == Side::Long {
+            price >= self.stop_loss_close_position_price
+        } else {
+            price <= self.stop_loss_close_position_price
+        }
+    }
 }
 
 #[derive(
@@ -362,6 +435,46 @@ pub struct Custody {
     pub long_positions: PositionsAccounting,
     pub short_positions: PositionsAccounting,
     pub borrow_rate_state: BorrowRateState,
+}
+
+impl Custody {
+    // Returns the interest amount that has accrued since the last position cumulative interest snapshot update
+    pub fn get_interest_amount_usd(
+        &self,
+        position: &Position,
+        current_time: i64,
+    ) -> anyhow::Result<u64> {
+        if position.borrow_size_usd == 0 {
+            return Ok(0);
+        }
+
+        let cumulative_interest = self.get_cumulative_interest(current_time)?;
+
+        let position_interest =
+            if cumulative_interest > position.cumulative_interest_snapshot.to_u128() {
+                cumulative_interest - position.cumulative_interest_snapshot.to_u128()
+            } else {
+                return Ok(0);
+            };
+
+        math::checked_as_u64(
+            (position_interest * position.borrow_size_usd as u128) / Cortex::RATE_POWER,
+        )
+    }
+
+    pub fn get_cumulative_interest(&self, current_time: i64) -> anyhow::Result<u128> {
+        if current_time > self.borrow_rate_state.last_update {
+            let cumulative_interest = math::checked_ceil_div(
+                (current_time - self.borrow_rate_state.last_update) as u128
+                    * self.borrow_rate_state.current_rate as u128,
+                3_600,
+            )?;
+
+            Ok(self.borrow_rate_state.cumulative_interest.to_u128() + cumulative_interest)
+        } else {
+            Ok(self.borrow_rate_state.cumulative_interest.to_u128())
+        }
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug)]

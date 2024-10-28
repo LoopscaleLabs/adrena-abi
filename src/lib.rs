@@ -4,6 +4,7 @@ pub use {
     std::str::FromStr,
 };
 
+pub mod liquidation_price;
 pub mod math;
 pub mod pda;
 pub mod types;
@@ -38,23 +39,6 @@ pub mod main_pool {
     pub static JITOSOL_CUSTODY_ID: Pubkey = pubkey!("GZ9XfWwgTRhkma2Y91Q9r1XKotNXYjBnKKabj19rhT71");
     pub static WBTC_CUSTODY_ID: Pubkey = pubkey!("GFu3qS22mo6bAjg4Lr5R7L8pPgHq6GvbjJPKEHkbbs2c");
 }
-
-// BPS
-pub const BPS_DECIMALS: u8 = 4;
-pub const BPS_POWER: u128 = 10u64.pow(BPS_DECIMALS as u32) as u128;
-// RATE
-pub const RATE_POWER: u128 = 10u64.pow(RATE_DECIMALS as u32) as u128;
-pub const RATE_DECIMALS: u8 = 9;
-//
-// Warning: A low price decimals means a possible loss of precision when interpreting pyth prices
-// Look at the function scale_to_exponent
-pub const PRICE_DECIMALS: u8 = 10;
-//
-pub const USD_DECIMALS: u8 = 6;
-pub const LP_DECIMALS: u8 = USD_DECIMALS;
-pub const LM_DECIMALS: u8 = USD_DECIMALS;
-
-pub const GOVERNANCE_SHADOW_TOKEN_DECIMALS: u8 = USD_DECIMALS;
 
 #[program]
 mod adrena_abi {

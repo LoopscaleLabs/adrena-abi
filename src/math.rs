@@ -1,6 +1,5 @@
 use {
-    super::BPS_POWER,
-    crate::U128Split,
+    crate::{Cortex, U128Split},
     anyhow::{anyhow, Result},
     std::{
         fmt::Display,
@@ -409,7 +408,7 @@ pub fn scale_to_exponent(arg: u64, exponent: i32, target_exponent: i32) -> Resul
         let result = arg / checked_pow(10, delta as usize)?;
 
         // Accept 1bps loss of precision
-        if result * checked_pow(10, delta as usize)? < (arg - (arg / BPS_POWER as u64)) {
+        if result * checked_pow(10, delta as usize)? < (arg - (arg / Cortex::BPS_POWER as u64)) {
             return Err(anyhow!(
                 "Pyth price exponent too large incurring precision loss"
             ));
