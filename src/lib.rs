@@ -91,6 +91,10 @@ mod adrena_abi {
     pub(crate) fn resolve_staking_round(cx: Context<ResolveStakingRound>) -> Result<()> {
         Ok(())
     }
+
+    pub(crate) fn claim_stakes(cx: Context<ClaimStakes>) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -470,58 +474,115 @@ pub(crate) struct ResolveStakingRound<'info> {
     /// #1
     #[account(mut)]
     pub caller: Signer<'info>,
-
     /// #2
     #[account(mut)]
     pub payer: Signer<'info>,
-
     /// #3
     /// CHECKS: only for CPI
     #[account(mut)]
     pub staking_staked_token_vault: UncheckedAccount<'info>,
-
     /// #4
     /// CHECKS: only for CPI
     #[account(mut)]
     pub staking_reward_token_vault: UncheckedAccount<'info>,
-
     /// #5
     /// CHECKS: only for CPI
     #[account(mut)]
     pub staking_lm_reward_token_vault: UncheckedAccount<'info>,
-
     /// #6
     /// CHECKS: only for CPI
     pub transfer_authority: UncheckedAccount<'info>,
-
     /// #7
     /// CHECKS: only for CPI
     #[account(mut)]
     pub staking: UncheckedAccount<'info>,
-
     /// #8
     /// CHECKS: only for CPI
     #[account(mut)]
     pub cortex: UncheckedAccount<'info>,
-
     /// #9
     /// CHECKS: only for CPI
     #[account(mut)]
     pub lm_token_mint: UncheckedAccount<'info>,
-
     /// #10
     /// CHECKS: only for CPI
     pub fee_redistribution_mint: UncheckedAccount<'info>,
-
     /// #11
     /// CHECKS: only for CPI
     pub adrena_program: UncheckedAccount<'info>,
-
     /// #12
     /// CHECKS: only for CPI
     pub system_program: UncheckedAccount<'info>,
-
     /// #13
     /// CHECKS: only for CPI
     pub token_program: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
+pub(crate) struct ClaimStakes<'info> {
+    /// #1
+    #[account(mut)]
+    pub caller: Signer<'info>,
+    /// #2
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// #3
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub owner: UncheckedAccount<'info>,
+    /// #4
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub reward_token_account: UncheckedAccount<'info>,
+    /// #5
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub lm_token_account: UncheckedAccount<'info>,
+    /// #6
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking_reward_token_vault: UncheckedAccount<'info>,
+    /// #7
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking_lm_reward_token_vault: UncheckedAccount<'info>,
+    /// #8
+    /// CHECKS: only for CPI
+    pub transfer_authority: UncheckedAccount<'info>,
+    /// #9
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub user_staking: UncheckedAccount<'info>,
+    /// #10
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking: UncheckedAccount<'info>,
+    /// #11
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub cortex: UncheckedAccount<'info>,
+    /// #12
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub pool: UncheckedAccount<'info>,
+    /// #13
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub genesis_lock: UncheckedAccount<'info>,
+    /// #14
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub lm_token_mint: UncheckedAccount<'info>,
+    /// #15
+    /// CHECKS: only for CPI
+    pub fee_redistribution_mint: UncheckedAccount<'info>,
+    /// #16
+    /// CHECKS: only for CPI
+    adrena_program: UncheckedAccount<'info>,
+    /// #17
+    /// CHECKS: only for CPI
+    system_program: UncheckedAccount<'info>,
+    /// #18
+    /// CHECKS: only for CPI
+    token_program: UncheckedAccount<'info>,
 }
