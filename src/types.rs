@@ -477,13 +477,6 @@ impl Custody {
     }
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug)]
-pub struct OraclePrice {
-    pub price: u64,
-    pub exponent: i32,
-    pub confidence: u64,
-}
-
 #[derive(PartialEq, Copy, Clone, Default, Debug)]
 pub enum Side {
     None = 0,
