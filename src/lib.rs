@@ -6,7 +6,9 @@ pub use {
 
 pub mod liquidation_price;
 pub mod math;
+pub mod oracle_price;
 pub mod pda;
+pub mod pyth;
 pub mod types;
 
 declare_id!("13gDzEXCdocbj8iAiqrScGo47NiSuYENGsRqi3SEAwet");
