@@ -87,6 +87,10 @@ mod adrena_abi {
     ) -> Result<()> {
         Ok(())
     }
+
+    pub(crate) fn resolve_staking_round(cx: Context<ResolveStakingRound>) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -459,4 +463,65 @@ pub struct CleanupPositionTakeProfit<'info> {
     /// #10
     #[account(address = SABLIER_THREAD_PROGRAM_ID)]
     sablier_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub(crate) struct ResolveStakingRound<'info> {
+    /// #1
+    #[account(mut)]
+    pub caller: Signer<'info>,
+
+    /// #2
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    /// #3
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking_staked_token_vault: UncheckedAccount<'info>,
+
+    /// #4
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking_reward_token_vault: UncheckedAccount<'info>,
+
+    /// #5
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking_lm_reward_token_vault: UncheckedAccount<'info>,
+
+    /// #6
+    /// CHECKS: only for CPI
+    pub transfer_authority: UncheckedAccount<'info>,
+
+    /// #7
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub staking: UncheckedAccount<'info>,
+
+    /// #8
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub cortex: UncheckedAccount<'info>,
+
+    /// #9
+    /// CHECKS: only for CPI
+    #[account(mut)]
+    pub lm_token_mint: UncheckedAccount<'info>,
+
+    /// #10
+    /// CHECKS: only for CPI
+    pub fee_redistribution_mint: UncheckedAccount<'info>,
+
+    /// #11
+    /// CHECKS: only for CPI
+    pub adrena_program: UncheckedAccount<'info>,
+
+    /// #12
+    /// CHECKS: only for CPI
+    pub system_program: UncheckedAccount<'info>,
+
+    /// #13
+    /// CHECKS: only for CPI
+    pub token_program: UncheckedAccount<'info>,
 }
