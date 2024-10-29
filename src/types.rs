@@ -10,6 +10,8 @@ pub const MAX_CUSTODIES: usize = 10;
 
 pub const MAX_STABLE_CUSTODY: usize = 2;
 
+pub const MAX_LOCKED_STAKE_COUNT: usize = 32;
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy)]
 pub struct ClosePositionLongParams {
     pub price: Option<u64>,
@@ -513,4 +515,55 @@ impl TryFrom<u8> for Side {
             _ => anyhow::bail!("Invalid side value"),
         })
     }
+}
+
+#[account(zero_copy)]
+#[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
+#[repr(C)]
+pub struct UserStaking {
+    pub bump: u8,
+    pub thread_authority_bump: u8,
+    pub _padding: [u8; 6],
+    pub stakes_claim_cron_thread_id: u64,
+    pub liquid_stake: LiquidStake,
+    pub locked_stakes: [LockedStake; MAX_LOCKED_STAKE_COUNT],
+}
+
+#[derive(
+    Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug, Zeroable, Pod,
+)]
+#[repr(C)]
+pub struct LiquidStake {
+    pub amount: u64,
+    pub stake_time: i64,
+    pub claim_time: i64,
+    pub overlap_time: i64,
+    pub overlap_amount: u64,
+}
+
+#[derive(
+    Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug, Zeroable, Pod,
+)]
+#[repr(C)]
+pub struct LockedStake {
+    pub amount: u64,
+    pub stake_time: i64,
+    pub claim_time: i64,
+    pub end_time: i64,
+    pub lock_duration: u64,
+    pub reward_multiplier: u32,
+    pub lm_reward_multiplier: u32,
+    pub vote_multiplier: u32,
+    pub qualified_for_rewards_in_resolved_round_count: u32,
+    pub amount_with_reward_multiplier: u64,
+    pub amount_with_lm_reward_multiplier: u64,
+    pub resolved: u8,
+    pub _padding2: [u8; 7],
+    pub stake_resolution_thread_id: u64,
+    pub early_exit: u8,
+    pub _padding3: [u8; 7],
+    pub early_exit_fee: u64,
+    pub is_genesis: u8,
+    pub _padding4: [u8; 7],
+    pub genesis_claim_time: i64,
 }
