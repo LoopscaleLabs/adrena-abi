@@ -4,6 +4,9 @@ use {
     bytemuck::{Pod, Zeroable},
 };
 
+pub const HOURS_PER_DAY: i64 = 24;
+pub const SECONDS_PER_HOURS: i64 = 3600;
+
 pub const MAX_RESOLVED_ROUNDS: usize = 32;
 pub const ROUND_MIN_DURATION_HOURS: i64 = 6;
 pub const ROUND_MIN_DURATION_SECONDS: i64 = ROUND_MIN_DURATION_HOURS * SECONDS_PER_HOURS;
