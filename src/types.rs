@@ -523,7 +523,8 @@ impl TryFrom<u8> for Side {
 pub struct UserStaking {
     pub bump: u8,
     pub thread_authority_bump: u8,
-    pub _padding: [u8; 6],
+    pub staking_type: u8,
+    pub _padding: [u8; 5],
     pub stakes_claim_cron_thread_id: u64,
     pub liquid_stake: LiquidStake,
     pub locked_stakes: [LockedStake; MAX_LOCKED_STAKE_COUNT],
