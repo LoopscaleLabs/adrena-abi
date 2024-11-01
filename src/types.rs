@@ -35,6 +35,12 @@ pub struct LiquidateLongParams {}
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct LiquidateShortParams {}
 
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone)]
+pub struct FinalizeLockedStakeParams {
+    pub thread_id: u64,
+    pub early_exit: bool,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, Default, Pod, Zeroable)]
 #[repr(C)]
 pub struct LimitedString {
@@ -602,4 +608,47 @@ pub struct LockedStake {
     pub is_genesis: u8,
     pub _padding4: [u8; 7],
     pub genesis_claim_time: i64,
+}
+
+impl LockedStake {
+    pub const FEE_RATE_UPPER_CAP: u128 = 400_000_000; // 40%
+    pub const FEE_RATE_LOWER_CAP: u128 = 50_000_000; // 5%
+
+    pub fn is_initialized(&self) -> bool {
+        self.amount > 0
+    }
+
+    pub fn is_genesis(&self) -> bool {
+        self.is_genesis != 0
+    }
+
+    pub fn is_resolved(&self) -> bool {
+        self.resolved != 0
+    }
+
+    pub fn is_early_exit(&self) -> bool {
+        self.early_exit != 0
+    }
+
+    pub fn is_established(&self) -> bool {
+        self.qualified_for_rewards_in_resolved_round_count >= 1
+    }
+
+    pub fn qualifies_for_rewards_from(&self, staking_round: &StakingRound) -> bool {
+        self.stake_time > 0
+            && self.stake_time < staking_round.start_time
+            && (self.claim_time == 0 || self.claim_time < staking_round.start_time)
+            && staking_round.end_time <= self.end_time
+            && staking_round.start_time < self.end_time
+    }
+
+    pub fn has_ended(&self, current_time: i64) -> anyhow::Result<bool> {
+        if self.stake_time == 0 {
+            anyhow::bail!("Invalid stake state");
+        }
+        if !self.is_initialized() {
+            anyhow::bail!("Invalid stake state");
+        }
+        Ok(self.end_time <= current_time)
+    }
 }

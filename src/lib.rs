@@ -1,3 +1,4 @@
+use anchor_client::solana_sdk;
 pub use {
     crate::{pda::*, types::*},
     anchor_lang::prelude::*,
@@ -96,6 +97,13 @@ mod adrena_abi {
     }
 
     pub(crate) fn claim_stakes(cx: Context<ClaimStakes>) -> Result<()> {
+        Ok(())
+    }
+
+    pub(crate) fn finalize_locked_stake(
+        cx: Context<FinalizeLockedStake>,
+        params: FinalizeLockedStakeParams,
+    ) -> Result<()> {
         Ok(())
     }
 }
@@ -588,4 +596,59 @@ pub(crate) struct ClaimStakes<'info> {
     /// #18
     /// CHECKS: only for CPI
     token_program: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
+pub struct FinalizeLockedStake<'info> {
+    /// #1
+    #[account(mut)]
+    pub caller: Signer<'info>,
+    /// #2
+    #[account(mut)]
+    pub owner: AccountInfo<'info>,
+    /// #3
+    pub transfer_authority: AccountInfo<'info>,
+    /// #4
+    #[account(mut)]
+    pub user_staking: AccountLoader<'info, UserStaking>,
+    /// #5
+    #[account(mut)]
+    pub staking: AccountLoader<'info, Staking>,
+    /// #6
+    #[account(mut)]
+    pub cortex: AccountLoader<'info, Cortex>,
+    /// #7
+    #[account(mut)]
+    pub lm_token_mint: AccountInfo<'info>,
+    /// #8
+    #[account(mut)]
+    pub governance_token_mint: AccountInfo<'info>,
+    /// #9
+    pub governance_realm: UncheckedAccount<'info>,
+    /// #10
+    pub governance_realm_config: UncheckedAccount<'info>,
+    /// #11
+    #[account(mut)]
+    pub governance_governing_token_holding: UncheckedAccount<'info>,
+    /// #12
+    #[account(mut)]
+    pub governance_governing_token_owner_record: UncheckedAccount<'info>,
+    /// #13
+    #[account(mut)]
+    pub stake_resolution_thread: UncheckedAccount<'info>,
+    /// #14
+    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
+    sablier_program: AccountInfo<'info>,
+    /// #15
+    #[account(address = SPL_GOVERNANCE_PROGRAM_ID)]
+    governance_program: AccountInfo<'info>,
+    /// #16
+    #[account(address = ADRENA_PROGRAM_ID)]
+    adrena_program: AccountInfo<'info>,
+    /// #17
+    #[account(address = solana_sdk::system_program::ID)]
+    system_program: AccountInfo<'info>,
+    /// #18
+    #[account(address = SPL_TOKEN_PROGRAM_ID)]
+    token_program: AccountInfo<'info>,
 }
