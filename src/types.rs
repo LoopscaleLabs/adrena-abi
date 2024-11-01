@@ -524,6 +524,28 @@ pub enum StakingType {
     LP = 2,
 }
 
+impl From<StakingType> for u8 {
+    fn from(val: StakingType) -> Self {
+        match val {
+            StakingType::LM => 1,
+            StakingType::LP => 2,
+        }
+    }
+}
+
+impl TryFrom<u8> for StakingType {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u8) -> std::result::Result<Self, Self::Error> {
+        Ok(match value {
+            1 => StakingType::LM,
+            2 => StakingType::LP,
+            // Return an error if unknown value
+            _ => anyhow::bail!("Invalid staking type"),
+        })
+    }
+}
+
 #[account(zero_copy)]
 #[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
@@ -535,6 +557,12 @@ pub struct UserStaking {
     pub stakes_claim_cron_thread_id: u64,
     pub liquid_stake: LiquidStake,
     pub locked_stakes: [LockedStake; MAX_LOCKED_STAKE_COUNT],
+}
+
+impl UserStaking {
+    pub fn get_staking_type(&self) -> StakingType {
+        StakingType::try_from(self.staking_type).unwrap()
+    }
 }
 
 #[derive(
