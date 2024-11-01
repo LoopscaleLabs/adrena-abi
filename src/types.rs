@@ -517,6 +517,13 @@ impl TryFrom<u8> for Side {
     }
 }
 
+#[derive(PartialEq, Copy, Clone, Debug, Default)]
+pub enum StakingType {
+    #[default]
+    LM = 1,
+    LP = 2,
+}
+
 #[account(zero_copy)]
 #[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
