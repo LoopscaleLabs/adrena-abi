@@ -36,6 +36,12 @@ pub static ALP_MINT: Pubkey = pubkey!("4yCLi5yWGzpTWMQ1iWHG5CrGYAdBkhyEdsuSugjDU
 pub static MAIN_POOL_ID: Pubkey = pubkey!("4bQRutgDJs6vuh6ZcWaPVXiQaBzbHketjbCDjL4oRN34");
 pub static GENESIS_LOCK_ID: Pubkey = pubkey!("CZpYRLt2bsuVFopyKftdWBBKm4rVr5wLiPX79Y4YoLJ5");
 
+pub static GOVERNANCE_PROGRAM_ID: Pubkey = pubkey!("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
+pub static ADRENA_GOVERNANCE_REALM_ID: Pubkey =
+    pubkey!("GWe1VYTRMujAtGVhSLwSn4YPsXBLe5qfkzNAYAKD44Nk");
+pub static ADRENA_GOVERNANCE_REALM_CONFIG_ID: Pubkey =
+    pubkey!("7RPMsAtFKWp8DVFx4YntFTALCWuWG53hjBt9HRtgUyo6");
+
 pub mod main_pool {
     use super::*;
     pub static USDC_CUSTODY_ID: Pubkey = pubkey!("Dk523LZeDQbZtUwPEBjFXCd2Au1tD7mWZBJJmcgHktNk");
