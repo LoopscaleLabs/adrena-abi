@@ -226,15 +226,14 @@ pub fn get_realm_config_pda(realm: &Pubkey) -> Pubkey {
 }
 
 /// Returns TokenOwnerRecord PDA address
-pub fn get_token_owner_record_address(
-    program_id: &Pubkey,
+pub fn get_token_owner_record_pda(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_owner: &Pubkey,
 ) -> Pubkey {
     Pubkey::find_program_address(
         &get_token_owner_record_address_seeds(realm, governing_token_mint, governing_token_owner),
-        program_id,
+        &GOVERNANCE_PROGRAM_ID,
     )
     .0
 }
