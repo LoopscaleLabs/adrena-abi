@@ -1,5 +1,5 @@
 use {
-    crate::{Side, SABLIER_THREAD_PROGRAM_ID},
+    crate::{Side, GOVERNANCE_PROGRAM_ID, SABLIER_THREAD_PROGRAM_ID},
     anchor_lang::prelude::*,
 };
 
@@ -155,4 +155,86 @@ pub fn get_custody_token_account_pda(
         ],
         &crate::id(),
     )
+}
+
+///
+///
+
+/// Seed prefix for Governance  PDAs
+/// Note: This prefix is used for the initial set of PDAs and shouldn't be used
+/// for any new accounts All new PDAs should use a unique prefix to guarantee
+/// uniqueness for each account
+pub const PROGRAM_AUTHORITY_SEED: &[u8] = b"governance";
+
+/// Returns Realm PDA seeds
+fn get_realm_address_seeds(name: &str) -> [&[u8]; 2] {
+    [PROGRAM_AUTHORITY_SEED, name.as_bytes()]
+}
+
+/// Returns Realm Token Holding PDA seeds
+fn get_governing_token_holding_address_seeds<'a>(
+    realm: &'a Pubkey,
+    governing_token_mint: &'a Pubkey,
+) -> [&'a [u8]; 3] {
+    [
+        PROGRAM_AUTHORITY_SEED,
+        realm.as_ref(),
+        governing_token_mint.as_ref(),
+    ]
+}
+
+/// Returns RealmConfig PDA seeds
+fn get_realm_config_address_seeds(realm: &Pubkey) -> [&[u8]; 2] {
+    [b"realm-config", realm.as_ref()]
+}
+
+/// Returns TokenOwnerRecord PDA seeds
+fn get_token_owner_record_address_seeds<'a>(
+    realm: &'a Pubkey,
+    governing_token_mint: &'a Pubkey,
+    governing_token_owner: &'a Pubkey,
+) -> [&'a [u8]; 4] {
+    [
+        PROGRAM_AUTHORITY_SEED,
+        realm.as_ref(),
+        governing_token_mint.as_ref(),
+        governing_token_owner.as_ref(),
+    ]
+}
+
+/// Returns Realm PDA address
+pub fn get_realm_pda(name: &str) -> Pubkey {
+    Pubkey::find_program_address(&get_realm_address_seeds(name), &GOVERNANCE_PROGRAM_ID).0
+}
+
+/// Returns Realm Token Holding PDA address
+pub fn get_governing_token_holding_pda(realm: &Pubkey, governing_token_mint: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_governing_token_holding_address_seeds(realm, governing_token_mint),
+        &GOVERNANCE_PROGRAM_ID,
+    )
+    .0
+}
+
+/// Returns RealmConfig PDA address
+pub fn get_realm_config_pda(realm: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_realm_config_address_seeds(realm),
+        &GOVERNANCE_PROGRAM_ID,
+    )
+    .0
+}
+
+/// Returns TokenOwnerRecord PDA address
+pub fn get_token_owner_record_address(
+    program_id: &Pubkey,
+    realm: &Pubkey,
+    governing_token_mint: &Pubkey,
+    governing_token_owner: &Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_token_owner_record_address_seeds(realm, governing_token_mint, governing_token_owner),
+        program_id,
+    )
+    .0
 }
