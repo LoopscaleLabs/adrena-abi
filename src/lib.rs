@@ -41,6 +41,8 @@ pub static ADRENA_GOVERNANCE_REALM_ID: Pubkey =
     pubkey!("GWe1VYTRMujAtGVhSLwSn4YPsXBLe5qfkzNAYAKD44Nk");
 pub static ADRENA_GOVERNANCE_REALM_CONFIG_ID: Pubkey =
     pubkey!("7RPMsAtFKWp8DVFx4YntFTALCWuWG53hjBt9HRtgUyo6");
+pub static ADRENA_GOVERNANCE_SHADOW_TOKEN_MINT: Pubkey =
+    pubkey!("G3T7ZLw2UHLejCQe3LxdUgme7kqRrNq379sLd95iJdEv");
 
 pub mod main_pool {
     use super::*;
