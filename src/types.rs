@@ -37,7 +37,7 @@ pub struct LiquidateShortParams {}
 
 #[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone)]
 pub struct FinalizeLockedStakeParams {
-    pub thread_id: u64,
+    pub locked_stake_id: u64,
     pub early_exit: bool,
 }
 
@@ -119,7 +119,7 @@ pub struct Staking {
     pub _padding: [u8; 3],
     pub lm_emission_potentiometer_bps: u16,
     pub months_elapsed_since_inception: u16,
-    pub resolve_round_cron_thread_id: u64,
+    pub _padding_unsafe: [u8; 8],
     pub emission_amount_per_round_last_update: i64,
     pub current_month_emission_amount_per_round: u64,
 }
@@ -154,7 +154,7 @@ pub struct Cortex {
     pub ecosystem_bucket_vested_amount: u64,
     pub ecosystem_bucket_minted_amount: u64,
     pub genesis_liquidity_alp_amount: u64,
-    pub unique_position_automation_thread_id_counter: u64,
+    pub unique_position_id_counter: u64,
 }
 
 impl Cortex {
@@ -217,9 +217,9 @@ pub struct Pool {
 pub struct Position {
     pub bump: u8,
     pub side: u8,
-    pub take_profit_thread_is_set: u8,
-    pub stop_loss_thread_is_set: u8,
-    pub pending_cleanup_and_close: u8,
+    pub take_profit_is_set: u8,
+    pub stop_loss_is_set: u8,
+    pub _padding_unsafe: [u8; 1],
     pub _padding: [u8; 3],
     pub owner: Pubkey,
     pub pool: Pubkey,
@@ -237,31 +237,26 @@ pub struct Position {
     pub collateral_amount: u64,
     pub exit_fee_usd: u64,
     pub liquidation_fee_usd: u64,
-    pub take_profit_thread_id: u64,
+    pub id: u64,
     pub take_profit_limit_price: u64,
-    pub stop_loss_thread_id: u64,
+    pub _padding_unsafe3: [u8; 8],
     pub stop_loss_limit_price: u64,
     pub stop_loss_close_position_price: u64,
 }
 
 impl Position {
     pub const LEN: usize = 8 + std::mem::size_of::<Position>();
-
-    pub fn is_pending_cleanup_and_close(&self) -> bool {
-        self.pending_cleanup_and_close != 0
-    }
-
     pub fn get_side(&self) -> Side {
         // Consider value in the struct always good
         Side::try_from(self.side).unwrap()
     }
 
     pub fn take_profit_is_set(&self) -> bool {
-        self.take_profit_thread_is_set != 0
+        self.take_profit_is_set != 0
     }
 
     pub fn stop_loss_is_set(&self) -> bool {
-        self.stop_loss_thread_is_set != 0
+        self.stop_loss_is_set != 0
     }
 
     pub fn take_profit_reached(&self, price: u64) -> bool {
@@ -557,10 +552,10 @@ impl TryFrom<u8> for StakingType {
 #[repr(C)]
 pub struct UserStaking {
     pub bump: u8,
-    pub thread_authority_bump: u8,
+    pub _unused_unsafe: [u8; 1],
     pub staking_type: u8,
     pub _padding: [u8; 5],
-    pub stakes_claim_cron_thread_id: u64,
+    pub locked_stake_id_counter: u64,
     pub liquid_stake: LiquidStake,
     pub locked_stakes: [LockedStake; MAX_LOCKED_STAKE_COUNT],
 }
@@ -601,7 +596,8 @@ pub struct LockedStake {
     pub amount_with_lm_reward_multiplier: u64,
     pub resolved: u8,
     pub _padding2: [u8; 7],
-    pub stake_resolution_thread_id: u64,
+    // History: was a thread id before while using Sablier, now used as a unique random id for each stake
+    pub id: u64,
     pub early_exit: u8,
     pub _padding3: [u8; 7],
     pub early_exit_fee: u64,

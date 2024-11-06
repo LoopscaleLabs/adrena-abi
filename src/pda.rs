@@ -1,10 +1,8 @@
 use {
-    crate::{Side, GOVERNANCE_PROGRAM_ID, SABLIER_THREAD_PROGRAM_ID},
+    crate::{Side, GOVERNANCE_PROGRAM_ID},
     anchor_lang::prelude::*,
 };
 
-#[constant]
-pub const SEED_THREAD: &[u8] = b"thread";
 
 #[constant]
 pub const SEED_CONFIG: &[u8] = b"config";
@@ -27,22 +25,6 @@ pub fn get_genesis_lock_pda(pool_pda: &Pubkey) -> (Pubkey, u8) {
 
 pub fn get_lm_token_mint_pda() -> (Pubkey, u8) {
     Pubkey::find_program_address(&["lm_token_mint".as_ref()], &crate::id())
-}
-
-pub fn get_sablier_thread_pda(
-    thread_authority: &Pubkey,
-    thread_id: Vec<u8>,
-    domain: Option<Vec<u8>>,
-) -> (Pubkey, u8) {
-    Pubkey::find_program_address(
-        &[
-            SEED_THREAD,
-            thread_authority.as_ref(),
-            thread_id.as_slice(),
-            domain.unwrap_or_default().as_slice(),
-        ],
-        &SABLIER_THREAD_PROGRAM_ID,
-    )
 }
 
 pub fn get_governance_token_mint_pda() -> (Pubkey, u8) {
