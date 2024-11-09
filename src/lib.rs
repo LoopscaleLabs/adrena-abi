@@ -17,10 +17,6 @@ declare_id!("13gDzEXCdocbj8iAiqrScGo47NiSuYENGsRqi3SEAwet");
 pub static SPL_TOKEN_PROGRAM_ID: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 pub static SPL_ASSOCIATED_TOKEN_PROGRAM_ID: Pubkey =
     pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
-pub static SABLIER_THREAD_PROGRAM_ID: Pubkey =
-    pubkey!("sabGLGXfBiUCkwtprPMtatG6tCNxhcWWs1hjQAvDqEE");
-pub static SABLIER_NETWORK_PROGRAM_ID: Pubkey =
-    pubkey!("H6CTDj7ewA6PT1jGt2WTnkhWb2RwwuoQkAsgzRuSsnaV");
 pub static SPL_GOVERNANCE_PROGRAM_ID: Pubkey =
     pubkey!("GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw");
 
@@ -86,16 +82,6 @@ mod adrena_abi {
     pub(crate) fn liquidate_short(
         cx: Context<LiquidateShort>,
         params: LiquidateShortParams,
-    ) -> Result<()> {
-        Ok(())
-    }
-
-    pub(crate) fn cleanup_position_stop_loss(cx: Context<CleanupPositionStopLoss>) -> Result<()> {
-        Ok(())
-    }
-
-    pub(crate) fn cleanup_position_take_profit(
-        cx: Context<CleanupPositionTakeProfit>,
     ) -> Result<()> {
         Ok(())
     }
@@ -178,20 +164,11 @@ pub struct ClosePositionLong<'info> {
     #[account(mut)]
     pub user_profile: Option<AccountLoader<'info, UserProfile>>,
     /// #22
-    #[account(mut)]
-    pub take_profit_thread: UncheckedAccount<'info>,
-    /// #23
-    #[account(mut)]
-    pub stop_loss_thread: UncheckedAccount<'info>,
-    /// #24
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     token_program: AccountInfo<'info>,
-    /// #25
+    /// #23
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
-    /// #26
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -259,20 +236,11 @@ pub struct ClosePositionShort<'info> {
     #[account(mut)]
     pub user_profile: Option<AccountLoader<'info, UserProfile>>,
     /// #23
-    #[account(mut)]
-    pub take_profit_thread: UncheckedAccount<'info>,
-    /// #24
-    #[account(mut)]
-    pub stop_loss_thread: UncheckedAccount<'info>,
-    /// #25
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     token_program: AccountInfo<'info>,
-    /// #26
+    /// #24
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
-    /// #27
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -337,20 +305,11 @@ pub struct LiquidateShort<'info> {
     #[account(mut)]
     pub user_profile: Option<AccountLoader<'info, UserProfile>>,
     /// #22
-    #[account(mut)]
-    pub take_profit_thread: UncheckedAccount<'info>,
-    /// #23
-    #[account(mut)]
-    pub stop_loss_thread: UncheckedAccount<'info>,
-    /// #24
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     token_program: AccountInfo<'info>,
-    /// #25
+    /// #23
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
-    /// #26
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -412,80 +371,11 @@ pub struct LiquidateLong<'info> {
     #[account(mut)]
     pub user_profile: Option<AccountLoader<'info, UserProfile>>,
     /// #21
-    #[account(mut)]
-    pub take_profit_thread: UncheckedAccount<'info>,
-    /// #22
-    #[account(mut)]
-    pub stop_loss_thread: UncheckedAccount<'info>,
-    /// #23
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     token_program: AccountInfo<'info>,
-    /// #24
+    /// #22
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
-    /// #25
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
-}
-
-#[derive(Accounts)]
-pub struct CleanupPositionStopLoss<'info> {
-    /// #1
-    #[account(mut)]
-    pub caller: Signer<'info>,
-    /// #2
-    #[account(mut)]
-    pub owner: AccountInfo<'info>,
-    /// #3
-    pub transfer_authority: AccountInfo<'info>,
-    /// #4
-    pub cortex: AccountLoader<'info, Cortex>,
-    /// #5
-    pub pool: AccountLoader<'info, Pool>,
-    /// #6
-    #[account(mut)]
-    pub position: AccountLoader<'info, Position>,
-    /// #7
-    pub custody: AccountLoader<'info, Custody>,
-    /// #8
-    #[account(mut)]
-    pub stop_loss_thread: AccountInfo<'info>,
-    /// #9
-    #[account(mut)]
-    pub take_profit_thread: UncheckedAccount<'info>,
-    /// #10
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
-}
-
-#[derive(Accounts)]
-pub struct CleanupPositionTakeProfit<'info> {
-    /// #1
-    #[account(mut)]
-    pub caller: Signer<'info>,
-    /// #2
-    #[account(mut)]
-    pub owner: AccountInfo<'info>,
-    /// #3
-    pub transfer_authority: AccountInfo<'info>,
-    /// #4
-    pub cortex: AccountLoader<'info, Cortex>,
-    /// #5
-    pub pool: AccountLoader<'info, Pool>,
-    /// #6
-    #[account(mut)]
-    pub position: AccountLoader<'info, Position>,
-    /// #7
-    pub custody: AccountLoader<'info, Custody>,
-    /// #8
-    #[account(mut)]
-    pub take_profit_thread: AccountInfo<'info>,
-    /// #9
-    #[account(mut)]
-    pub stop_loss_thread: UncheckedAccount<'info>,
-    /// #10
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -642,21 +532,15 @@ pub struct FinalizeLockedStake<'info> {
     #[account(mut)]
     pub governance_governing_token_owner_record: UncheckedAccount<'info>,
     /// #13
-    #[account(mut)]
-    pub stake_resolution_thread: UncheckedAccount<'info>,
-    /// #14
-    #[account(address = SABLIER_THREAD_PROGRAM_ID)]
-    sablier_program: AccountInfo<'info>,
-    /// #15
     #[account(address = SPL_GOVERNANCE_PROGRAM_ID)]
     governance_program: AccountInfo<'info>,
-    /// #16
+    /// #14
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
-    /// #17
+    /// #15
     #[account(address = solana_sdk::system_program::ID)]
     system_program: AccountInfo<'info>,
-    /// #18
+    /// #16
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     token_program: AccountInfo<'info>,
 }
