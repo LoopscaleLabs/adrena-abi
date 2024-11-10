@@ -544,3 +544,19 @@ pub struct FinalizeLockedStake<'info> {
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     token_program: AccountInfo<'info>,
 }
+
+#[derive(Accounts)]
+pub struct UpdatePoolAum<'info> {
+    /// #1
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// #2
+    pub cortex: AccountLoader<'info, Cortex>,
+    /// #3
+    #[account(mut)]
+    pub pool: AccountLoader<'info, Pool>,
+    // remaining accounts:
+    //   pool.tokens.len() custody accounts (read-only, unsigned)
+    //   pool.tokens.len() custody oracles (read-only, unsigned)
+    //   0..pool.tokens.len() custody trade oracles (read-only, unsigned)
+}
