@@ -706,6 +706,11 @@ impl LockedStake {
     }
 }
 
+pub enum LeverageCheckStatus {
+    Ok(u64),
+    MaxLeverageExceeded(u64),
+}
+
 impl Pool {
     // Utility function used to avoid dealing with blank spots in custodies array
     pub fn get_custodies(&self) -> Vec<Pubkey> {
@@ -786,7 +791,7 @@ impl Pool {
         current_time: i64,
         // Every time position manually changes, use true
         initial: bool,
-    ) -> Result<u64> {
+    ) -> Result<LeverageCheckStatus> {
         // Idea is to check the leverage considering the highest fee when not creating a new position
         // Position should always be able to pay liquidation fee
         let use_liquidation_fee_usd_for_pnl_calculation =
@@ -801,23 +806,11 @@ impl Pool {
             use_liquidation_fee_usd_for_pnl_calculation,
         )?;
 
-        msg!("leverage: {}", leverage);
-
         if leverage > custody.pricing.max_leverage as u64 {
-            return Err(anyhow!("Max leverage exceeded"));
+            return Ok(LeverageCheckStatus::MaxLeverageExceeded(leverage));
         }
 
-        if initial {
-            if leverage < MIN_INITIAL_LEVERAGE as u64 {
-                return Err(anyhow!("Min leverage exceeded"));
-            }
-        }
-
-        if leverage > custody.pricing.max_initial_leverage as u64 {
-            return Err(anyhow!("Max initial leverage exceeded"));
-        }
-
-        Ok(leverage)
+        Ok(LeverageCheckStatus::Ok(leverage))
     }
 
     pub fn get_liquidation_price(
