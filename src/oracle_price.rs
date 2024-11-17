@@ -77,4 +77,34 @@ impl OraclePrice {
             confidence: self.confidence,
         })
     }
+
+    // Converts USD amount with implied USD_DECIMALS decimals to token amount
+    pub fn get_token_amount(&self, asset_amount_usd: u64, token_decimals: u8) -> Result<u64> {
+        if asset_amount_usd == 0 || self.price == 0 {
+            return Ok(0);
+        }
+
+        math::checked_decimal_div(
+            asset_amount_usd,
+            -(Cortex::USD_DECIMALS as i32),
+            self.price,
+            self.exponent,
+            -(token_decimals as i32),
+        )
+    }
+
+    // Converts token amount to USD with implied USD_DECIMALS decimals
+    pub fn get_asset_amount_usd(&self, token_amount: u64, token_decimals: u8) -> Result<u64> {
+        if token_amount == 0 || self.price == 0 {
+            return Ok(0);
+        }
+
+        math::checked_decimal_mul(
+            token_amount,
+            -(token_decimals as i32),
+            self.price,
+            self.exponent,
+            -(Cortex::USD_DECIMALS as i32),
+        )
+    }
 }

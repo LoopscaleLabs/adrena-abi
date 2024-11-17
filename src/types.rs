@@ -1,6 +1,7 @@
 use {
-    crate::math,
+    crate::{math, oracle_price::OraclePrice},
     anchor_lang::prelude::*,
+    anyhow::{anyhow, Result},
     bytemuck::{Pod, Zeroable},
 };
 
@@ -16,6 +17,7 @@ pub const MAX_ROUNDS_PER_MONTH: u64 = SECONDS_PER_MONTH as u64 / ROUND_MIN_DURAT
 pub const MAX_CUSTODIES: usize = 10;
 
 pub const MAX_STABLE_CUSTODY: usize = 2;
+pub const MIN_INITIAL_LEVERAGE: u32 = 11_000; // BPS
 
 pub const MAX_LOCKED_STAKE_COUNT: usize = 32;
 
@@ -169,6 +171,10 @@ impl Cortex {
     pub const LP_DECIMALS: u8 = Self::USD_DECIMALS;
     pub const LM_DECIMALS: u8 = Cortex::USD_DECIMALS;
     pub const GOVERNANCE_SHADOW_TOKEN_DECIMALS: u8 = Cortex::USD_DECIMALS;
+
+    pub fn is_empty_account(account_info: &AccountInfo) -> Result<bool> {
+        Ok(account_info.try_data_is_empty()? || account_info.try_lamports()? == 0)
+    }
 }
 
 #[derive(
@@ -448,6 +454,10 @@ pub struct Custody {
 }
 
 impl Custody {
+    pub fn is_stable(&self) -> bool {
+        self.is_stable == 1
+    }
+
     // Returns the interest amount that has accrued since the last position cumulative interest snapshot update
     pub fn get_interest_amount_usd(
         &self,
@@ -483,6 +493,36 @@ impl Custody {
             Ok(self.borrow_rate_state.cumulative_interest.to_u128() + cumulative_interest)
         } else {
             Ok(self.borrow_rate_state.cumulative_interest.to_u128())
+        }
+    }
+
+    pub fn get_collective_position(&self, side: Side) -> Result<Position> {
+        let accounting = if side == Side::Long {
+            &self.long_positions
+        } else {
+            &self.short_positions
+        };
+
+        if accounting.open_positions > 0 {
+            Ok(Position {
+                side: side.into(),
+                price: if accounting.total_quantity.to_u128() > 0 {
+                    math::checked_as_u64(
+                        accounting.weighted_price.to_u128() / accounting.total_quantity.to_u128(),
+                    )?
+                } else {
+                    0
+                },
+                size_usd: accounting.size_usd,
+                borrow_size_usd: accounting.borrow_size_usd,
+                unrealized_interest_usd: accounting.cumulative_interest_usd,
+                cumulative_interest_snapshot: accounting.cumulative_interest_snapshot,
+                locked_amount: accounting.locked_amount,
+                exit_fee_usd: accounting.exit_fee_usd,
+                ..Position::default()
+            })
+        } else {
+            Ok(Position::default())
         }
     }
 }
@@ -606,6 +646,23 @@ pub struct LockedStake {
     pub genesis_claim_time: i64,
 }
 
+/// Specific to the codebase, this struct is used to store the profit and loss of a position.
+#[derive(Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug)]
+pub struct ProfitAndLoss {
+    pub profit_usd: u64,
+    pub loss_usd: u64,
+    // Unrealized
+    pub exit_fee: u64,
+    pub exit_fee_usd: u64,
+    pub borrow_fee_usd: u64,
+}
+
+pub struct StableCustodyInfo {
+    pub custody: Pubkey,
+    pub token_price: OraclePrice,
+    pub decimals: u8,
+}
+
 impl LockedStake {
     pub const FEE_RATE_UPPER_CAP: u128 = 400_000_000; // 40%
     pub const FEE_RATE_LOWER_CAP: u128 = 50_000_000; // 5%
@@ -646,5 +703,300 @@ impl LockedStake {
             anyhow::bail!("Invalid stake state");
         }
         Ok(self.end_time <= current_time)
+    }
+}
+
+impl Pool {
+    // Utility function used to avoid dealing with blank spots in custodies array
+    pub fn get_custodies(&self) -> Vec<Pubkey> {
+        let mut custodies: Vec<Pubkey> = vec![];
+
+        for &custody in &self.custodies {
+            if custody != Pubkey::default() {
+                custodies.push(custody);
+            }
+        }
+        custodies
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_leverage(
+        &self,
+        position: &Position,
+        token_trade_price: &OraclePrice,
+        collateral_token_price: &OraclePrice,
+        collateral_custody: &Custody,
+        current_time: i64,
+        // true: calculate the PnL with liquidation_fee_usd
+        // false: calculate the PnL with exit_fee_usd
+        liquidation: bool,
+    ) -> Result<u64> {
+        // Do not accept 0 price
+        if position.price == 0 {
+            return Ok(u64::MAX);
+        }
+
+        let pnl = self.get_pnl_usd(
+            position,
+            token_trade_price,
+            collateral_token_price,
+            collateral_custody,
+            current_time,
+            liquidation,
+        )?;
+
+        let current_margin_usd = (|| {
+            // Nor profits or losses
+            if pnl.profit_usd == 0 && pnl.loss_usd == 0 {
+                return position.collateral_usd;
+            }
+
+            // Profit
+            if pnl.profit_usd > 0 {
+                return position.collateral_usd + pnl.profit_usd;
+            }
+
+            // Partial loss
+            if pnl.loss_usd <= position.collateral_usd {
+                return position.collateral_usd - pnl.loss_usd;
+            }
+
+            // Total loss
+            0
+        })();
+
+        if current_margin_usd > 0 {
+            math::checked_as_u64(
+                (position.size_usd as u128 * Cortex::BPS_POWER) / current_margin_usd as u128,
+            )
+        } else {
+            Ok(u64::MAX)
+        }
+    }
+
+    /// Checks if leverage is within the limits (and return the value for events)
+    #[allow(clippy::too_many_arguments)]
+    pub fn check_leverage(
+        &self,
+        position: &Position,
+        token_trade_price: &OraclePrice,
+        custody: &Custody,
+        collateral_token_price: &OraclePrice,
+        collateral_custody: &Custody,
+        current_time: i64,
+        // Every time position manually changes, use true
+        initial: bool,
+    ) -> Result<u64> {
+        // Idea is to check the leverage considering the highest fee when not creating a new position
+        // Position should always be able to pay liquidation fee
+        let use_liquidation_fee_usd_for_pnl_calculation =
+            !initial && position.liquidation_fee_usd > position.exit_fee_usd;
+
+        let leverage = self.get_leverage(
+            position,
+            token_trade_price,
+            collateral_token_price,
+            collateral_custody,
+            current_time,
+            use_liquidation_fee_usd_for_pnl_calculation,
+        )?;
+
+        msg!("leverage: {}", leverage);
+
+        if leverage > custody.pricing.max_leverage as u64 {
+            return Err(anyhow!("Max leverage exceeded"));
+        }
+
+        if initial {
+            if leverage < MIN_INITIAL_LEVERAGE as u64 {
+                return Err(anyhow!("Min leverage exceeded"));
+            }
+        }
+
+        if leverage > custody.pricing.max_initial_leverage as u64 {
+            return Err(anyhow!("Max initial leverage exceeded"));
+        }
+
+        Ok(leverage)
+    }
+
+    pub fn get_liquidation_price(
+        &self,
+        position: &Position,
+        custody: &Custody,
+        collateral_custody: &Custody,
+        current_time: i64,
+    ) -> Result<u64> {
+        // liq_price = pos_price +- (collateral + unreal_profit - unreal_loss - exit_fee - interest - size/max_leverage) * pos_price / size
+
+        if position.size_usd == 0 || position.price == 0 {
+            return Ok(0);
+        }
+
+        let total_unrealized_interest_usd = collateral_custody
+            .get_interest_amount_usd(position, current_time)?
+            + position.unrealized_interest_usd;
+        let unrealized_loss_usd = position.liquidation_fee_usd + total_unrealized_interest_usd;
+
+        let mut max_loss_usd = math::checked_as_u64(
+            (position.size_usd as u128 * Cortex::BPS_POWER) / custody.pricing.max_leverage as u128,
+        )?;
+
+        max_loss_usd += unrealized_loss_usd;
+
+        let margin_usd = position.collateral_usd;
+
+        let max_price_diff = if max_loss_usd >= margin_usd {
+            max_loss_usd - margin_usd
+        } else {
+            margin_usd - max_loss_usd
+        };
+
+        let max_price_diff = math::scale_to_exponent(
+            max_price_diff,
+            -(Cortex::USD_DECIMALS as i32),
+            -(Cortex::PRICE_DECIMALS as i32),
+        )?;
+
+        let position_size_usd = math::scale_to_exponent(
+            position.size_usd,
+            -(Cortex::USD_DECIMALS as i32),
+            -(Cortex::PRICE_DECIMALS as i32),
+        )?;
+
+        let max_price_diff = math::checked_as_u64(
+            (max_price_diff as u128 * position.price as u128) / position_size_usd as u128,
+        )?;
+
+        if position.get_side() == Side::Long {
+            if max_loss_usd >= margin_usd {
+                Ok(position.price + max_price_diff)
+            } else if position.price > max_price_diff {
+                Ok(position.price - max_price_diff)
+            } else {
+                Ok(0)
+            }
+        } else if max_loss_usd >= margin_usd {
+            if position.price > max_price_diff {
+                Ok(position.price - max_price_diff)
+            } else {
+                Ok(0)
+            }
+        } else {
+            Ok(position.price + max_price_diff)
+        }
+    }
+
+    // Note: PnL is a unrealized PnL
+    // Note that the PnL is an estimation and can be different when the position is closed due to exact fees not known until actual close (this estimation is calculated conservatively)
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_pnl_usd(
+        &self,
+        position: &Position,
+        token_trade_price: &OraclePrice,
+        collateral_token_price: &OraclePrice,
+        collateral_custody: &Custody,
+        current_time: i64,
+        liquidation: bool,
+    ) -> Result<ProfitAndLoss> {
+        if position.size_usd == 0 || position.price == 0 {
+            return Ok(ProfitAndLoss::default());
+        }
+
+        // Use High/Low price to protect the pool
+        let exit_price = match Side::try_from(position.side)? {
+            Side::Long => token_trade_price.price,
+            Side::Short => token_trade_price.price,
+            Side::None => return Err(anyhow!("Invalid position state")),
+        };
+
+        let exit_fee_usd: u64 = if liquidation {
+            position.liquidation_fee_usd
+        } else {
+            position.exit_fee_usd
+        };
+
+        // Marginal but uses low price for safety
+        let exit_fee = collateral_token_price
+            .low()
+            .get_token_amount(exit_fee_usd, collateral_custody.decimals)?;
+
+        let total_unrealized_interest_usd = collateral_custody
+            .get_interest_amount_usd(position, current_time)?
+            + position.unrealized_interest_usd;
+
+        let unrealized_loss_usd = exit_fee_usd + total_unrealized_interest_usd;
+
+        let (price_diff_profit, price_diff_loss) = if position.get_side() == Side::Long {
+            if exit_price > position.price {
+                (exit_price - position.price, 0u64)
+            } else {
+                (0u64, position.price - exit_price)
+            }
+        } else if exit_price < position.price {
+            (position.price - exit_price, 0u64)
+        } else {
+            (0u64, exit_price - position.price)
+        };
+
+        if price_diff_profit > 0 {
+            let potential_profit_usd = math::checked_as_u64(
+                (position.size_usd as u128 * price_diff_profit as u128) / position.price as u128,
+            )?;
+
+            if potential_profit_usd >= unrealized_loss_usd {
+                let cur_profit_usd = potential_profit_usd - unrealized_loss_usd;
+
+                let max_profit_usd = if current_time <= position.open_time {
+                    0
+                } else {
+                    collateral_token_price
+                        .low()
+                        .get_asset_amount_usd(position.locked_amount, collateral_custody.decimals)?
+                };
+
+                Ok(ProfitAndLoss {
+                    profit_usd: std::cmp::min(max_profit_usd, cur_profit_usd),
+                    loss_usd: 0u64,
+                    exit_fee,
+                    exit_fee_usd,
+                    borrow_fee_usd: total_unrealized_interest_usd,
+                })
+            } else {
+                Ok(ProfitAndLoss {
+                    profit_usd: 0u64,
+                    loss_usd: unrealized_loss_usd - potential_profit_usd,
+                    exit_fee,
+                    exit_fee_usd,
+                    borrow_fee_usd: total_unrealized_interest_usd,
+                })
+            }
+        } else {
+            let mut potential_loss_usd = math::checked_as_u64(math::checked_ceil_div::<u128>(
+                position.size_usd as u128 * price_diff_loss as u128,
+                position.price as u128,
+            )?)?;
+
+            potential_loss_usd += unrealized_loss_usd;
+
+            Ok(ProfitAndLoss {
+                profit_usd: 0u64,
+                loss_usd: potential_loss_usd,
+                exit_fee,
+                exit_fee_usd,
+                borrow_fee_usd: total_unrealized_interest_usd,
+            })
+        }
+    }
+
+    pub fn get_fee_amount(fee: u16, amount: u64) -> Result<u64> {
+        if fee == 0 || amount == 0 {
+            return Ok(0);
+        }
+
+        math::checked_as_u64(math::checked_ceil_div::<u128>(
+            amount as u128 * fee as u128,
+            Cortex::BPS_POWER,
+        )?)
     }
 }
