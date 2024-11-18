@@ -100,6 +100,10 @@ mod adrena_abi {
     ) -> Result<()> {
         Ok(())
     }
+
+    pub fn update_pool_aum(ctx: Context<UpdatePoolAum>) -> Result<u128> {
+        Ok(0)
+    }
 }
 
 #[derive(Accounts)]
