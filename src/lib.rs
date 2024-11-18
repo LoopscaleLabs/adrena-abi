@@ -90,7 +90,7 @@ mod adrena_abi {
         Ok(())
     }
 
-    pub(crate) fn claim_stakes(cx: Context<ClaimStakes>) -> Result<()> {
+    pub fn claim_stakes(ctx: Context<ClaimStakes>, params: ClaimStakesParams) -> Result<()> {
         Ok(())
     }
 

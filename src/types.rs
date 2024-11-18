@@ -43,6 +43,11 @@ pub struct FinalizeLockedStakeParams {
     pub early_exit: bool,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct ClaimStakesParams {
+    pub locked_stake_indexes: Option<Vec<u8>>,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, Default, Pod, Zeroable)]
 #[repr(C)]
 pub struct LimitedString {
