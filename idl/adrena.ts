@@ -1,5 +1,5 @@
 export type Adrena = {
-  "version": "1.1.4",
+  "version": "1.1.7",
   "name": "adrena",
   "instructions": [
     {
@@ -10053,6 +10053,12 @@ export type Adrena = {
           {
             "name": "leverage",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -10073,6 +10079,12 @@ export type Adrena = {
           {
             "name": "leverage",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -10093,6 +10105,12 @@ export type Adrena = {
           {
             "name": "leverage",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -11306,6 +11324,29 @@ export type Adrena = {
           },
           {
             "name": "Active"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LeverageCheckType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Initial"
+          },
+          {
+            "name": "AddCollateral"
+          },
+          {
+            "name": "RemoveCollateral"
+          },
+          {
+            "name": "IncreasePosition"
+          },
+          {
+            "name": "Liquidate"
           }
         ]
       }
@@ -12228,7 +12269,7 @@ export type Adrena = {
 };
 
 export const IDL: Adrena = {
-  "version": "1.1.4",
+  "version": "1.1.7",
   "name": "adrena",
   "instructions": [
     {
@@ -22282,6 +22323,12 @@ export const IDL: Adrena = {
           {
             "name": "leverage",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -22302,6 +22349,12 @@ export const IDL: Adrena = {
           {
             "name": "leverage",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -22322,6 +22375,12 @@ export const IDL: Adrena = {
           {
             "name": "leverage",
             "type": "u32"
+          },
+          {
+            "name": "referrer",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }
@@ -23535,6 +23594,29 @@ export const IDL: Adrena = {
           },
           {
             "name": "Active"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LeverageCheckType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Initial"
+          },
+          {
+            "name": "AddCollateral"
+          },
+          {
+            "name": "RemoveCollateral"
+          },
+          {
+            "name": "IncreasePosition"
+          },
+          {
+            "name": "Liquidate"
           }
         ]
       }
