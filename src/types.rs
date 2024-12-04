@@ -14,7 +14,7 @@ pub const ROUND_MIN_DURATION_SECONDS: i64 = ROUND_MIN_DURATION_HOURS * SECONDS_P
 pub const SECONDS_PER_MONTH: i64 = 30 * SECONDS_PER_HOURS * 24;
 pub const MAX_ROUNDS_PER_MONTH: u64 = SECONDS_PER_MONTH as u64 / ROUND_MIN_DURATION_SECONDS as u64;
 
-pub const MAX_CUSTODIES: usize = 10;
+pub const MAX_CUSTODIES: usize = 8;
 
 pub const MAX_STABLE_CUSTODY: usize = 2;
 pub const MIN_INITIAL_LEVERAGE: u32 = 11_000; // BPS
@@ -216,7 +216,10 @@ pub struct Pool {
     pub registered_custody_count: u8,
     pub name: LimitedString,
     pub custodies: [Pubkey; MAX_CUSTODIES],
+    pub _padding1: [u8; 32],
+    pub whitelisted_swapper: Pubkey,
     pub ratios: [TokenRatios; MAX_CUSTODIES],
+    pub _padding2: [u8; 16],
     pub aum_usd: U128Split,
     pub inception_time: i64,
     pub aum_soft_cap_usd: u64,
