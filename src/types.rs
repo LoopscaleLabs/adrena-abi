@@ -48,6 +48,14 @@ pub struct ClaimStakesParams {
     pub locked_stake_indexes: Option<Vec<u8>>,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy)]
+pub struct OpenPositionWithSwapParams {
+    pub price: u64,
+    pub collateral: u64,
+    pub leverage: u32, // in BPS
+    pub referrer: Option<Pubkey>,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, Default, Pod, Zeroable)]
 #[repr(C)]
 pub struct LimitedString {
