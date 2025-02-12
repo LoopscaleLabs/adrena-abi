@@ -226,6 +226,18 @@ pub fn get_limit_order_book_pda(pool_pda: &Pubkey, owner: &Pubkey) -> (Pubkey, u
             owner.as_ref(),
             pool_pda.as_ref(),
         ],
-        &adrena::id(),
+        &crate::id(),
+    )
+}
+
+pub fn get_collateral_escrow_pda(pool_pda: &Pubkey, owner: &Pubkey, mint: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            "escrow_account".as_ref(),
+            owner.as_ref(),
+            pool_pda.as_ref(),
+            mint.as_ref(),
+        ],
+        &crate::id(),
     )
 }
