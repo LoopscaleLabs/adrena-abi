@@ -56,6 +56,16 @@ pub struct OpenPositionWithSwapParams {
     pub referrer: Option<Pubkey>,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone)]
+pub struct ExecuteLimitOrderLongParams {
+    pub id: u64,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone)]
+pub struct ExecuteLimitOrderShortParams {
+    pub id: u64,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, Default, Pod, Zeroable)]
 #[repr(C)]
 pub struct LimitedString {
@@ -63,6 +73,7 @@ pub struct LimitedString {
     pub length: u8,
 }
 
+#[deprecated]
 #[derive(
     Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug, Pod, Zeroable,
 )]
@@ -76,21 +87,46 @@ pub struct TradingStats {
     pub losses_usd: u64,
     pub fee_paid_usd: u64,
 }
-
+#[deprecated]
 #[account(zero_copy)]
 #[derive(Default, Debug)]
 #[repr(C)]
-pub struct UserProfile {
+pub struct UserProfileV1 {
     pub bump: u8,
-    pub _padding: [u8; 7],
+    pub version: u8,
+    pub _padding: [u8; 6],
     pub nickname: LimitedString,
     pub created_at: i64,
+    //
     pub owner: Pubkey,
+    //
     pub swap_count: u64,
     pub swap_volume_usd: u64,
     pub swap_fee_paid_usd: u64,
+    //
     pub short_stats: TradingStats,
     pub long_stats: TradingStats,
+}
+
+impl UserProfileV1 {
+    pub const LEN: usize = 8 + std::mem::size_of::<UserProfileV1>();
+}
+
+#[account(zero_copy)]
+#[derive(Debug)]
+#[repr(C)]
+pub struct UserProfile {
+    pub bump: u8,
+    pub version: u8,
+    pub profile_picture: u8, // Enum of profile pictures
+    pub wallpaper: u8,       // Enum of wallpapers
+    pub title: u8,           // Enum of title
+    pub _padding: [u8; 3],
+    pub nickname: LimitedString,
+    pub created_at: i64,
+    pub owner: Pubkey,
+    pub achievements: [u8; 256], // Enough to fit 255 achievements + be a multiple of 8 for memory alignment
+    pub _padding2: [u8; 64],
 }
 
 #[derive(
@@ -173,6 +209,8 @@ pub struct Cortex {
 }
 
 impl Cortex {
+    // Lamports
+    pub const AUTOMATION_EXECUTION_FEE: u64 = 100_000;
     // BPS
     pub const BPS_DECIMALS: u8 = 4;
     pub const BPS_POWER: u128 = 10u64.pow(Self::BPS_DECIMALS as u32) as u128;
@@ -227,7 +265,9 @@ pub struct Pool {
     pub _padding1: [u8; 32],
     pub whitelisted_swapper: Pubkey,
     pub ratios: [TokenRatios; MAX_CUSTODIES],
-    pub _padding2: [u8; 16],
+    pub _padding2: [u8; 8],
+    // Unique ID counter for limit orders (incremented with wrapping add, looping)
+    pub unique_limit_order_id_counter: u64,
     pub aum_usd: U128Split,
     pub inception_time: i64,
     pub aum_soft_cap_usd: u64,
@@ -1007,5 +1047,87 @@ impl Pool {
             amount as u128 * fee as u128,
             Cortex::BPS_POWER,
         )?)
+    }
+}
+
+pub const MAX_LIMIT_ORDERS: usize = 16;
+
+#[derive(
+    Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug, Pod, Zeroable,
+)]
+#[repr(C)]
+pub struct LimitOrder {
+    pub id: u64,
+    pub trigger_price: u64,
+    pub limit_price: u64, // 0 means no slippage
+    pub custody: Pubkey,
+    pub collateral_custody: Pubkey,
+    pub side: u8,
+    pub initialized: u8,
+    pub is_limit_price_set: u8,
+    pub _padding: [u8; 5],
+    pub amount: u64,
+    pub leverage: u32,
+    pub _padding2: [u8; 4],
+}
+
+#[account(zero_copy)]
+#[derive(Default, Debug)]
+#[repr(C)]
+pub struct LimitOrderBook {
+    pub initialized: u8,
+    pub bump: u8,
+    pub registered_limit_order_count: u8,
+    pub _padding: [u8; 5], // Adjusted padding to match the size
+    pub owner: Pubkey,
+    pub limit_orders: [LimitOrder; MAX_LIMIT_ORDERS],
+    pub escrowed_lamports: u64,
+}
+
+impl LimitOrder {
+    pub fn get_side(&self) -> Side {
+        // Consider value in the struct always good
+        Side::try_from(self.side).unwrap()
+    }
+
+    pub fn is_initialized(&self) -> bool {
+        self.initialized != 0
+    }
+
+    pub fn is_limit_price_set(&self) -> bool {
+        self.limit_price != 0
+    }
+
+    // Returns yes if the order can be executed as it meets the conditions
+    pub fn is_executable(&self, token_trade_price: &OraclePrice, custody: &Pubkey) -> bool {
+        if self.custody != *custody {
+            return false;
+        }
+
+        match self.get_side() {
+            Side::Long => {
+                if token_trade_price.price > self.trigger_price {
+                    return false;
+                }
+
+                if self.is_limit_price_set() {
+                    return token_trade_price.price >= self.limit_price;
+                }
+
+                true
+            }
+            Side::Short => {
+                if token_trade_price.price < self.trigger_price {
+                    return false;
+                }
+
+                if self.is_limit_price_set() {
+                    return token_trade_price.price <= self.limit_price;
+                }
+
+                true
+            }
+            _ => false,
+        }
     }
 }
