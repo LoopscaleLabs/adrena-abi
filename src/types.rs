@@ -126,7 +126,10 @@ pub struct UserProfile {
     pub created_at: i64,
     pub owner: Pubkey,
     pub achievements: [u8; 256], // Enough to fit 255 achievements + be a multiple of 8 for memory alignment
-    pub _padding2: [u8; 64],
+    pub referrer_profile: Pubkey, // Pubkey of the referrer profile (not the wallet!)
+    pub claimable_referral_fee_usd: u64, // Referral fee that can be claimed by the referrer right now
+    pub total_referral_fee_usd: u64,     // Total referral fee earned by the referrer
+    pub _padding2: [u8; 16],
 }
 
 #[derive(
