@@ -1,5 +1,5 @@
 export type Adrena = {
-  "version": "1.1.9",
+  "version": "1.2.1",
   "name": "adrena",
   "instructions": [
     {
@@ -9008,6 +9008,85 @@ export type Adrena = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "initReferrerRewardTokenVault",
+      "accounts": [
+        {
+          "name": "caller",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "#1",
+            "Anyone"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "#2"
+          ]
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#3"
+          ]
+        },
+        {
+          "name": "cortex",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#4"
+          ]
+        },
+        {
+          "name": "referrerRewardTokenVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "#5"
+          ]
+        },
+        {
+          "name": "feeRedistributionMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#6"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#7"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#8"
+          ]
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#9"
+          ]
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -9455,11 +9534,15 @@ export type Adrena = {
             "type": "u64"
           },
           {
+            "name": "cumulativeReferrerFeeUsd",
+            "type": "u64"
+          },
+          {
             "name": "padding1",
             "type": {
               "array": [
                 "u8",
-                16
+                8
               ]
             }
           },
@@ -11275,6 +11358,10 @@ export type Adrena = {
           },
           {
             "name": "lpCirculatingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "cumulativeReferrerFeeUsd",
             "type": "u64"
           }
         ]
@@ -13297,7 +13384,7 @@ export type Adrena = {
 };
 
 export const IDL: Adrena = {
-  "version": "1.1.9",
+  "version": "1.2.1",
   "name": "adrena",
   "instructions": [
     {
@@ -22306,6 +22393,85 @@ export const IDL: Adrena = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "initReferrerRewardTokenVault",
+      "accounts": [
+        {
+          "name": "caller",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "#1",
+            "Anyone"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "#2"
+          ]
+        },
+        {
+          "name": "transferAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#3"
+          ]
+        },
+        {
+          "name": "cortex",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#4"
+          ]
+        },
+        {
+          "name": "referrerRewardTokenVault",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "#5"
+          ]
+        },
+        {
+          "name": "feeRedistributionMint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#6"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#7"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#8"
+          ]
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#9"
+          ]
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -22753,11 +22919,15 @@ export const IDL: Adrena = {
             "type": "u64"
           },
           {
+            "name": "cumulativeReferrerFeeUsd",
+            "type": "u64"
+          },
+          {
             "name": "padding1",
             "type": {
               "array": [
                 "u8",
-                16
+                8
               ]
             }
           },
@@ -24573,6 +24743,10 @@ export const IDL: Adrena = {
           },
           {
             "name": "lpCirculatingSupply",
+            "type": "u64"
+          },
+          {
+            "name": "cumulativeReferrerFeeUsd",
             "type": "u64"
           }
         ]
