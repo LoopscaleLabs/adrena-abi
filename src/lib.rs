@@ -1,7 +1,9 @@
 use anchor_client::solana_sdk;
 pub use {
     crate::{pda::*, types::*},
-    anchor_lang::prelude::*,
+    anchor_lang::system_program::System,
+    anchor_lang::{prelude::*, AnchorDeserialize, AnchorSerialize, Program},
+    anchor_spl::token::{Mint, Token, TokenAccount},
     std::str::FromStr,
 };
 
@@ -48,6 +50,13 @@ pub mod main_pool {
     pub static JITOSOL_CUSTODY_ID: Pubkey = pubkey!("GZ9XfWwgTRhkma2Y91Q9r1XKotNXYjBnKKabj19rhT71");
     pub static WBTC_CUSTODY_ID: Pubkey = pubkey!("GFu3qS22mo6bAjg4Lr5R7L8pPgHq6GvbjJPKEHkbbs2c");
 }
+
+// For PriceUpdateV2 from Pyth
+// Needed for the DistributeFees structure
+pub use crate::pyth::PriceUpdateV2;
+
+// Define Adrena program type for the DistributeFees structure
+pub struct Adrena;
 
 #[program]
 mod adrena_abi {
@@ -104,6 +113,10 @@ mod adrena_abi {
 
     pub fn update_pool_aum(ctx: Context<UpdatePoolAum>) -> Result<u128> {
         Ok(0)
+    }
+
+    pub fn distribute_fees(ctx: Context<DistributeFees>) -> Result<()> {
+        Ok(())
     }
 
     pub fn open_or_increase_position_with_swap_long(
@@ -707,4 +720,73 @@ pub struct ExecuteLimitOrderShort<'info> {
     /// #16
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DistributeFees<'info> {
+    /// #1
+    #[account(mut)]
+    pub caller: Signer<'info>,
+
+    /// #2
+    pub transfer_authority: AccountInfo<'info>,
+
+    /// #3
+    pub cortex: AccountLoader<'info, Cortex>,
+
+    /// #4
+    #[account(mut)]
+    pub pool: AccountLoader<'info, Pool>,
+
+    /// #5
+    pub lm_staking: AccountLoader<'info, Staking>,
+
+    /// #6
+    #[account(mut)]
+    pub lp_staking: AccountLoader<'info, Staking>,
+
+    /// #7
+    pub lp_token_mint: Box<Account<'info, Mint>>,
+
+    /// #8
+    pub lm_token_mint: Box<Account<'info, Mint>>,
+
+    /// #9
+    pub fee_redistribution_mint: Box<Account<'info, Mint>>,
+
+    /// #10
+    #[account(mut)]
+    pub lm_staking_reward_token_vault: Box<Account<'info, TokenAccount>>,
+
+    /// #11
+    #[account(mut)]
+    pub lp_staking_reward_token_vault: Box<Account<'info, TokenAccount>>,
+
+    /// #12
+    #[account(mut)]
+    pub referrer_reward_token_vault: Box<Account<'info, TokenAccount>>,
+
+    /// #13
+    #[account(mut)]
+    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
+
+    /// #14
+    pub staking_reward_token_custody_oracle: Box<Account<'info, PriceUpdateV2>>,
+
+    /// #15
+    #[account(mut)]
+    pub staking_reward_token_custody_token_account: Box<Account<'info, TokenAccount>>,
+
+    /// #16
+    #[account(mut)]
+    pub protocol_fee_recipient: Box<Account<'info, TokenAccount>>,
+
+    /// #17
+    pub token_program: Program<'info, Token>,
+
+    /// #18
+    pub system_program: Program<'info, System>,
+
+    /// #19
+    pub adrena_program: Program<'info, Adrena>,
 }
