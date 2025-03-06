@@ -150,53 +150,33 @@ pub struct ClosePositionLong<'info> {
     pub transfer_authority: AccountInfo<'info>,
     /// #5
     #[account(mut)]
-    pub lm_staking: AccountLoader<'info, Staking>,
+    pub cortex: AccountLoader<'info, Cortex>,
     /// #6
     #[account(mut)]
-    pub lp_staking: AccountLoader<'info, Staking>,
+    pub pool: AccountLoader<'info, Pool>,
     /// #7
     #[account(mut)]
-    pub cortex: AccountLoader<'info, Cortex>,
+    pub position: AccountLoader<'info, Position>,
     /// #8
     #[account(mut)]
-    pub pool: AccountLoader<'info, Pool>,
-    /// #9
-    #[account(mut)]
-    pub position: AccountLoader<'info, Position>,
-    /// #10
-    #[account(mut)]
-    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
-    /// #11
-    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
-    /// #12
-    #[account(mut)]
-    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
-    /// #13
-    #[account(mut)]
     pub custody: AccountLoader<'info, Custody>,
-    /// #14
+    /// #9
     pub custody_oracle: AccountInfo<'info>,
-    /// #15
+    /// #10
     pub custody_trade_oracle: AccountInfo<'info>,
-    /// #16
+    /// #11
     #[account(mut)]
     pub custody_token_account: AccountInfo<'info>,
-    /// #17
+    /// #12
     #[account(mut)]
-    pub lm_staking_reward_token_vault: AccountInfo<'info>,
-    /// #18
+    pub user_profile: Option<AccountInfo<'info>>,
+    /// #13
     #[account(mut)]
-    pub lp_staking_reward_token_vault: AccountInfo<'info>,
-    /// #19
-    #[account(mut)]
-    pub lp_token_mint: AccountInfo<'info>,
-    /// #20
-    #[account(mut)]
-    pub protocol_fee_recipient: AccountInfo<'info>,
-    /// #21
+    pub referrer_profile: Option<AccountInfo<'info>>,
+    /// #14
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: AccountInfo<'info>,
-    /// #22
+    /// #15
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }
@@ -216,56 +196,36 @@ pub struct ClosePositionShort<'info> {
     pub transfer_authority: AccountInfo<'info>,
     /// #5
     #[account(mut)]
-    pub lm_staking: AccountLoader<'info, Staking>,
+    pub cortex: AccountLoader<'info, Cortex>,
     /// #6
     #[account(mut)]
-    pub lp_staking: AccountLoader<'info, Staking>,
+    pub pool: AccountLoader<'info, Pool>,
     /// #7
     #[account(mut)]
-    pub cortex: AccountLoader<'info, Cortex>,
+    pub position: AccountLoader<'info, Position>,
     /// #8
     #[account(mut)]
-    pub pool: AccountLoader<'info, Pool>,
+    pub custody: AccountLoader<'info, Custody>,
     /// #9
-    #[account(mut)]
-    pub position: AccountLoader<'info, Position>,
+    pub custody_trade_oracle: AccountInfo<'info>,
     /// #10
     #[account(mut)]
-    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
+    pub collateral_custody: AccountLoader<'info, Custody>,
     /// #11
-    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
+    pub collateral_custody_oracle: AccountInfo<'info>,
     /// #12
     #[account(mut)]
-    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
+    pub collateral_custody_token_account: AccountInfo<'info>,
     /// #13
     #[account(mut)]
-    pub custody: AccountLoader<'info, Custody>,
+    pub user_profile: Option<AccountInfo<'info>>,
     /// #14
-    pub custody_trade_oracle: AccountInfo<'info>,
+    #[account(mut)]
+    pub referrer_profile: Option<AccountInfo<'info>>,
     /// #15
-    #[account(mut)]
-    pub collateral_custody: AccountLoader<'info, Custody>,
-    /// #16
-    pub collateral_custody_oracle: AccountInfo<'info>,
-    /// #17
-    #[account(mut)]
-    pub collateral_custody_token_account: AccountInfo<'info>,
-    /// #18
-    #[account(mut)]
-    pub lm_staking_reward_token_vault: AccountInfo<'info>,
-    /// #19
-    #[account(mut)]
-    pub lp_staking_reward_token_vault: AccountInfo<'info>,
-    /// #20
-    #[account(mut)]
-    pub lp_token_mint: AccountInfo<'info>,
-    /// #21
-    #[account(mut)]
-    pub protocol_fee_recipient: AccountInfo<'info>,
-    /// #22
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: AccountInfo<'info>,
-    /// #23
+    /// #16
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }
@@ -282,56 +242,36 @@ pub struct LiquidateShort<'info> {
     pub transfer_authority: AccountInfo<'info>,
     /// #4
     #[account(mut)]
-    pub lm_staking: AccountLoader<'info, Staking>,
+    pub cortex: AccountLoader<'info, Cortex>,
     /// #5
     #[account(mut)]
-    pub lp_staking: AccountLoader<'info, Staking>,
+    pub pool: AccountLoader<'info, Pool>,
     /// #6
     #[account(mut)]
-    pub cortex: AccountLoader<'info, Cortex>,
+    pub position: AccountLoader<'info, Position>,
     /// #7
     #[account(mut)]
-    pub pool: AccountLoader<'info, Pool>,
+    pub custody: AccountLoader<'info, Custody>,
     /// #8
-    #[account(mut)]
-    pub position: AccountLoader<'info, Position>,
+    pub custody_trade_oracle: AccountInfo<'info>,
     /// #9
     #[account(mut)]
-    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
+    pub collateral_custody: AccountLoader<'info, Custody>,
     /// #10
-    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
+    pub collateral_custody_oracle: AccountInfo<'info>,
     /// #11
     #[account(mut)]
-    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
+    pub collateral_custody_token_account: AccountInfo<'info>,
     /// #12
     #[account(mut)]
-    pub custody: AccountLoader<'info, Custody>,
+    pub user_profile: Option<AccountInfo<'info>>,
     /// #13
-    pub custody_trade_oracle: AccountInfo<'info>,
+    #[account(mut)]
+    pub referrer_profile: Option<AccountInfo<'info>>,
     /// #14
-    #[account(mut)]
-    pub collateral_custody: AccountLoader<'info, Custody>,
-    /// #15
-    pub collateral_custody_oracle: AccountInfo<'info>,
-    /// #16
-    #[account(mut)]
-    pub collateral_custody_token_account: AccountInfo<'info>,
-    /// #17
-    #[account(mut)]
-    pub lm_staking_reward_token_vault: AccountInfo<'info>,
-    /// #18
-    #[account(mut)]
-    pub lp_staking_reward_token_vault: AccountInfo<'info>,
-    /// #19
-    #[account(mut)]
-    pub lp_token_mint: AccountInfo<'info>,
-    /// #20
-    #[account(mut)]
-    pub protocol_fee_recipient: AccountInfo<'info>,
-    /// #21
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: AccountInfo<'info>,
-    /// #22
+    /// #15
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }
@@ -348,53 +288,33 @@ pub struct LiquidateLong<'info> {
     pub transfer_authority: AccountInfo<'info>,
     /// #4
     #[account(mut)]
-    pub lm_staking: AccountLoader<'info, Staking>,
+    pub cortex: AccountLoader<'info, Cortex>,
     /// #5
     #[account(mut)]
-    pub lp_staking: AccountLoader<'info, Staking>,
+    pub pool: AccountLoader<'info, Pool>,
     /// #6
     #[account(mut)]
-    pub cortex: AccountLoader<'info, Cortex>,
+    pub position: AccountLoader<'info, Position>,
     /// #7
     #[account(mut)]
-    pub pool: AccountLoader<'info, Pool>,
-    /// #8
-    #[account(mut)]
-    pub position: AccountLoader<'info, Position>,
-    /// #9
-    #[account(mut)]
-    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
-    /// #10
-    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
-    /// #11
-    #[account(mut)]
-    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
-    /// #12
-    #[account(mut)]
     pub custody: AccountLoader<'info, Custody>,
-    /// #13
+    /// #8
     pub custody_oracle: AccountInfo<'info>,
-    /// #14
+    /// #9
     pub custody_trade_oracle: AccountInfo<'info>,
-    /// #15
+    /// #10
     #[account(mut)]
     pub custody_token_account: AccountInfo<'info>,
-    /// #16
+    /// #11
     #[account(mut)]
-    pub lm_staking_reward_token_vault: AccountInfo<'info>,
-    /// #17
+    pub user_profile: Option<AccountInfo<'info>>,
+    /// #12
     #[account(mut)]
-    pub lp_staking_reward_token_vault: AccountInfo<'info>,
-    /// #18
-    #[account(mut)]
-    pub lp_token_mint: AccountInfo<'info>,
-    /// #19
-    #[account(mut)]
-    pub protocol_fee_recipient: AccountInfo<'info>,
-    /// #20
+    pub referrer_profile: Option<AccountInfo<'info>>,
+    /// #13
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: AccountInfo<'info>,
-    /// #21
+    /// #14
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }
@@ -620,43 +540,17 @@ pub struct OpenOrIncreasePositionWithSwapLong<'info> {
     pub cortex: AccountLoader<'info, Cortex>,
     /// #14
     #[account(mut)]
-    pub lm_staking: AccountLoader<'info, Staking>,
+    pub pool: AccountLoader<'info, Pool>,
     /// #15
     #[account(mut)]
-    pub lp_staking: AccountLoader<'info, Staking>,
-    /// #16
-    #[account(mut)]
-    pub pool: AccountLoader<'info, Pool>,
-    /// #17
-    #[account(mut)]
     pub position: UncheckedAccount<'info>,
-    /// #18
-    #[account(mut)]
-    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
-    /// #19
-    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
-    /// #20
-    #[account(mut)]
-    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
-    /// #21
-    #[account(mut)]
-    pub lm_staking_reward_token_vault: AccountInfo<'info>,
-    /// #22
-    #[account(mut)]
-    pub lp_staking_reward_token_vault: AccountInfo<'info>,
-    /// #23
-    #[account(mut)]
-    pub lp_token_mint: AccountInfo<'info>,
-    /// #24
-    #[account(mut)]
-    pub protocol_fee_recipient: AccountInfo<'info>,
-    /// #25
+    /// #16
     #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
-    /// #26
+    /// #17
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: AccountInfo<'info>,
-    /// #27
+    /// #18
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }
@@ -705,43 +599,17 @@ pub struct OpenOrIncreasePositionWithSwapShort<'info> {
     pub cortex: AccountLoader<'info, Cortex>,
     /// #16
     #[account(mut)]
-    pub lm_staking: AccountLoader<'info, Staking>,
+    pub pool: AccountLoader<'info, Pool>,
     /// #17
     #[account(mut)]
-    pub lp_staking: AccountLoader<'info, Staking>,
-    /// #18
-    #[account(mut)]
-    pub pool: AccountLoader<'info, Pool>,
-    /// #19
-    #[account(mut)]
     pub position: UncheckedAccount<'info>,
-    /// #20
-    #[account(mut)]
-    pub staking_reward_token_custody: AccountLoader<'info, Custody>,
-    /// #21
-    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
-    /// #22
-    #[account(mut)]
-    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
-    /// #23
-    #[account(mut)]
-    pub lm_staking_reward_token_vault: AccountInfo<'info>,
-    /// #24
-    #[account(mut)]
-    pub lp_staking_reward_token_vault: AccountInfo<'info>,
-    /// #25
-    #[account(mut)]
-    pub lp_token_mint: AccountInfo<'info>,
-    /// #26
-    #[account(mut)]
-    pub protocol_fee_recipient: AccountInfo<'info>,
-    /// #27
+    /// #18
     #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
-    /// #28
+    /// #19
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: AccountInfo<'info>,
-    /// #29
+    /// #20
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }

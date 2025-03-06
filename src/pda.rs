@@ -241,3 +241,13 @@ pub fn get_collateral_escrow_pda(pool_pda: &Pubkey, owner: &Pubkey, mint: &Pubke
         &crate::id(),
     )
 }
+
+pub fn get_referrer_reward_token_vault(fee_redistribution_mint: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[
+            "referrer_reward_token_vault".as_ref(),
+            fee_redistribution_mint.as_ref(),
+        ],
+        &crate::id(),
+    )
+}

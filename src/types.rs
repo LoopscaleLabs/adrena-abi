@@ -126,7 +126,10 @@ pub struct UserProfile {
     pub created_at: i64,
     pub owner: Pubkey,
     pub achievements: [u8; 256], // Enough to fit 255 achievements + be a multiple of 8 for memory alignment
-    pub _padding2: [u8; 64],
+    pub referrer_profile: Pubkey, // Pubkey of the referrer profile (not the wallet!)
+    pub claimable_referral_fee_usd: u64, // Referral fee that can be claimed by the referrer right now
+    pub total_referral_fee_usd: u64,     // Total referral fee earned by the referrer
+    pub _padding2: [u8; 16],
 }
 
 #[derive(
@@ -262,7 +265,13 @@ pub struct Pool {
     pub registered_custody_count: u8,
     pub name: LimitedString,
     pub custodies: [Pubkey; MAX_CUSTODIES],
-    pub _padding1: [u8; 32],
+    // Keep track of fees debt
+    pub fees_debt_usd: u64, // Doesn't include the referrers_fee_debt_usd
+    pub referrers_fee_debt_usd: u64,
+    //
+    // Keep a stat about how much referral fees have been generated from all time
+    pub cumulative_referrer_fee_usd: u64,
+    pub _padding1: [u8; 8],
     pub whitelisted_swapper: Pubkey,
     pub ratios: [TokenRatios; MAX_CUSTODIES],
     pub _padding2: [u8; 8],
