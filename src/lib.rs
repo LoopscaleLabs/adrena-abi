@@ -782,11 +782,14 @@ pub struct DistributeFees<'info> {
     pub protocol_fee_recipient: Box<Account<'info, TokenAccount>>,
 
     /// #17
+    #[account(address = SPL_TOKEN_PROGRAM_ID)]
     pub token_program: Program<'info, Token>,
 
     /// #18
+    #[account(address = solana_sdk::system_program::ID)]
     pub system_program: Program<'info, System>,
 
     /// #19
+    #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: Program<'info, Adrena>,
 }
