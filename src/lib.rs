@@ -2,8 +2,7 @@ use anchor_client::solana_sdk;
 pub use {
     crate::{pda::*, types::*},
     anchor_lang::system_program::System,
-    anchor_lang::{prelude::*, AnchorDeserialize, AnchorSerialize, Program},
-    anchor_spl::token::{Mint, Token, TokenAccount},
+    anchor_lang::{prelude::*, AnchorDeserialize, AnchorSerialize},
     std::str::FromStr,
 };
 
@@ -746,50 +745,50 @@ pub struct DistributeFees<'info> {
     pub lp_staking: AccountLoader<'info, Staking>,
 
     /// #7
-    pub lp_token_mint: Box<Account<'info, Mint>>,
+    pub lp_token_mint: AccountInfo<'info>,
 
     /// #8
-    pub lm_token_mint: Box<Account<'info, Mint>>,
+    pub lm_token_mint: AccountInfo<'info>,
 
     /// #9
-    pub fee_redistribution_mint: Box<Account<'info, Mint>>,
+    pub fee_redistribution_mint: AccountInfo<'info>,
 
     /// #10
     #[account(mut)]
-    pub lm_staking_reward_token_vault: Box<Account<'info, TokenAccount>>,
+    pub lm_staking_reward_token_vault: AccountInfo<'info>,
 
     /// #11
     #[account(mut)]
-    pub lp_staking_reward_token_vault: Box<Account<'info, TokenAccount>>,
+    pub lp_staking_reward_token_vault: AccountInfo<'info>,
 
     /// #12
     #[account(mut)]
-    pub referrer_reward_token_vault: Box<Account<'info, TokenAccount>>,
+    pub referrer_reward_token_vault: AccountInfo<'info>,
 
     /// #13
     #[account(mut)]
     pub staking_reward_token_custody: AccountLoader<'info, Custody>,
 
     /// #14
-    pub staking_reward_token_custody_oracle: Box<Account<'info, PriceUpdateV2>>,
+    pub staking_reward_token_custody_oracle: AccountInfo<'info>,
 
     /// #15
     #[account(mut)]
-    pub staking_reward_token_custody_token_account: Box<Account<'info, TokenAccount>>,
+    pub staking_reward_token_custody_token_account: AccountInfo<'info>,
 
     /// #16
     #[account(mut)]
-    pub protocol_fee_recipient: Box<Account<'info, TokenAccount>>,
+    pub protocol_fee_recipient: AccountInfo<'info>,
 
     /// #17
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
-    pub token_program: Program<'info, Token>,
+    pub token_program: AccountInfo<'info>,
 
     /// #18
     #[account(address = solana_sdk::system_program::ID)]
-    pub system_program: Program<'info, System>,
+    pub system_program: AccountInfo<'info>,
 
     /// #19
     #[account(address = ADRENA_PROGRAM_ID)]
-    pub adrena_program: Program<'info, Adrena>,
+    pub adrena_program: AccountInfo<'info>,
 }
