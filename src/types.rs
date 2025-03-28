@@ -73,45 +73,6 @@ pub struct LimitedString {
     pub length: u8,
 }
 
-#[deprecated]
-#[derive(
-    Copy, Clone, PartialEq, AnchorSerialize, AnchorDeserialize, Default, Debug, Pod, Zeroable,
-)]
-#[repr(C)]
-pub struct TradingStats {
-    pub opened_position_count: u64,
-    pub liquidated_position_count: u64,
-    pub opening_average_leverage: u64,
-    pub opening_size_usd: u64,
-    pub profits_usd: u64,
-    pub losses_usd: u64,
-    pub fee_paid_usd: u64,
-}
-#[deprecated]
-#[account(zero_copy)]
-#[derive(Default, Debug)]
-#[repr(C)]
-pub struct UserProfileV1 {
-    pub bump: u8,
-    pub version: u8,
-    pub _padding: [u8; 6],
-    pub nickname: LimitedString,
-    pub created_at: i64,
-    //
-    pub owner: Pubkey,
-    //
-    pub swap_count: u64,
-    pub swap_volume_usd: u64,
-    pub swap_fee_paid_usd: u64,
-    //
-    pub short_stats: TradingStats,
-    pub long_stats: TradingStats,
-}
-
-impl UserProfileV1 {
-    pub const LEN: usize = 8 + std::mem::size_of::<UserProfileV1>();
-}
-
 #[account(zero_copy)]
 #[derive(Debug)]
 #[repr(C)]

@@ -1,4 +1,3 @@
-use anchor_client::solana_sdk;
 pub use {
     crate::{pda::*, types::*},
     anchor_lang::system_program::System,
@@ -145,6 +144,14 @@ mod adrena_abi {
         params: ExecuteLimitOrderShortParams,
     ) -> Result<()> {
         Ok(())
+    }
+
+    pub fn get_lp_token_price(
+        ctx: Context<GetLpTokenPrice>,
+    ) -> Result<u64> {
+        // This function would typically return the LP token price
+        // For now, we return a dummy value
+        Ok(0)
     }
 }
 
@@ -492,7 +499,6 @@ pub struct FinalizeLockedStake<'info> {
     #[account(address = ADRENA_PROGRAM_ID)]
     adrena_program: AccountInfo<'info>,
     /// #15
-    #[account(address = solana_sdk::system_program::ID)]
     system_program: AccountInfo<'info>,
     /// #16
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
@@ -558,7 +564,6 @@ pub struct OpenOrIncreasePositionWithSwapLong<'info> {
     #[account(mut)]
     pub position: UncheckedAccount<'info>,
     /// #16
-    #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
     /// #17
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
@@ -617,7 +622,6 @@ pub struct OpenOrIncreasePositionWithSwapShort<'info> {
     #[account(mut)]
     pub position: UncheckedAccount<'info>,
     /// #18
-    #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
     /// #19
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
@@ -663,7 +667,6 @@ pub struct ExecuteLimitOrderLong<'info> {
     #[account(mut)]
     pub limit_order_book: AccountLoader<'info, LimitOrderBook>,
     /// #13
-    #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
     /// #14
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
@@ -712,7 +715,6 @@ pub struct ExecuteLimitOrderShort<'info> {
     #[account(mut)]
     pub limit_order_book: AccountLoader<'info, LimitOrderBook>,
     /// #14
-    #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
     /// #15
     #[account(address = SPL_TOKEN_PROGRAM_ID)]
@@ -786,7 +788,6 @@ pub struct DistributeFees<'info> {
     pub token_program: AccountInfo<'info>,
 
     /// #18
-    #[account(address = solana_sdk::system_program::ID)]
     pub system_program: AccountInfo<'info>,
 
     /// #19

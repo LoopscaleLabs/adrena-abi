@@ -5,7 +5,7 @@ use {
 
 #[derive(BorshSerialize, BorshDeserialize, BorshSchema, Copy, Clone, PartialEq, Debug)]
 pub enum VerificationLevel {
-    Partial { num_signatures: u8 },
+    Partial,
     Full,
 }
 
