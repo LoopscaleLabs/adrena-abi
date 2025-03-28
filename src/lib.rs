@@ -793,3 +793,23 @@ pub struct DistributeFees<'info> {
     #[account(address = ADRENA_PROGRAM_ID)]
     pub adrena_program: AccountInfo<'info>,
 }
+
+#[derive(Accounts)]
+pub struct GetLpTokenPrice<'info> {
+    /// #1
+    #[account()]
+    pub cortex: AccountInfo<'info>,
+
+    /// #2
+    #[account()]
+    pub pool: AccountInfo<'info>,
+
+    /// #3
+    #[account()]
+    pub lp_token_mint: AccountInfo<'info>,
+    //
+    // remaining accounts:
+    //   pool.tokens.len() custody accounts (read-only, unsigned)
+    //   pool.tokens.len() custody oracles (read-only, unsigned)
+    //   0..pool.tokens.len() custody trade oracles (read-only, unsigned)
+}
