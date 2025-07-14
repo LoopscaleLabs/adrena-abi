@@ -528,7 +528,7 @@ pub struct BorrowRateState {
 }
 
 #[account(zero_copy)]
-#[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
+#[derive(Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct Custody {
     pub bump: u8,
@@ -690,7 +690,7 @@ impl TryFrom<u8> for StakingType {
 }
 
 #[account(zero_copy)]
-#[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
+#[derive(Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct UserStaking {
     pub bump: u8,
