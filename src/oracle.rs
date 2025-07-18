@@ -12,7 +12,7 @@ pub const STALENESS: i64 = 20; // in seconds
 pub const MAX_ORACLE_PRICES_COUNT: usize = 20;
 
 #[account(zero_copy)]
-#[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
+#[derive(Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct Oracle {
     pub bump: u8,
@@ -22,7 +22,7 @@ pub struct Oracle {
 }
 
 #[account(zero_copy)]
-#[derive(Default, Debug, PartialEq, AnchorSerialize, AnchorDeserialize)]
+#[derive(Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct OraclePrice {
     pub price: u64,
